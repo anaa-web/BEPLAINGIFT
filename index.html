@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chúc mừng</title>
+
+<style>
+body{
+margin:0;
+background:#0f0f0f;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+font-family:Arial, sans-serif;
+color:white;
+text-align:center;
+overflow:hidden;
+}
+
+.container{
+z-index:2;
+animation:fadeIn 1s ease;
+}
+
+img{
+max-width:90vw;
+max-height:60vh;
+border-radius:20px;
+box-shadow:0 0 30px rgba(255,255,255,0.4);
+}
+
+h1{
+margin-bottom:20px;
+font-size:32px;
+}
+
+canvas{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+pointer-events:none;
+z-index:1;
+}
+
+@keyframes fadeIn{
+from{opacity:0; transform:scale(0.8);}
+to{opacity:1; transform:scale(1);}
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="confetti"></canvas>
+
+<div class="container">
+<h1>🎉 CHÚC MỪNG BẠN 🎉</h1>
+<img id="gift">
+</div>
+
+<audio id="sound" preload="auto">
+<source src="win.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+/* ============================= */
+/* RANDOM QUÀ */
+/* ============================= */
+
+const gifts = [
+{img:"qua1.png", weight:30},
+{img:"qua2.png", weight:30},
+{img:"qua3.png", weight:30},
+{img:"qua4.png", weight:30},
+{img:"qua5.png", weight:30},
+{img:"qua6.png", weight:10},
+{img:"voucher.png", weight:60}
+];
+
+function randomGift(){
+let total = gifts.reduce((s,g)=>s+g.weight,0);
+let r = Math.random()*total;
+let sum = 0;
+for(let g of gifts){
+sum += g.weight;
+if(r <= sum) return g.img;
+}
+}
+
+document.getElementById("gift").src = randomGift();
+
+/* ============================= */
+/* RUNG ĐIỆN THOẠI */
+/* ============================= */
+
+if(navigator.vibrate){
+navigator.vibrate([200,100,200]);
+}
+
+/* ============================= */
+/* CONFETTI */
+/* ============================= */
+
+const canvas = document.getElementById("confetti");
+const ctx = canvas.getContext("2d");
+
+function resize(){
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+}
+resize();
+window.onresize = resize;
+
+const pieces = [];
+for(let i=0;i<180;i++){
+pieces.push({
+x:Math.random()*canvas.width,
+y:Math.random()*canvas.height - canvas.height,
+r:Math.random()*6+4,
+d:Math.random()*180,
+color:`hsl(${Math.random()*360},100%,60%)`,
+tilt:Math.random()*10-10
+});
+}
+
+function draw(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+for(let p of pieces){
+ctx.beginPath();
+ctx.lineWidth=p.r;
+ctx.strokeStyle=p.color;
+ctx.moveTo(p.x+p.tilt,p.y);
+ctx.lineTo(p.x,p.y+p.tilt+p.r);
+ctx.stroke();
+}
+update();
+requestAnimationFrame(draw);
+}
+
+function update(){
+for(let p of pieces){
+p.y += Math.cos(p.d)+2+p.r/2;
+p.x += Math.sin(p.d);
+if(p.y > canvas.height){
+p.y=-10;
+p.x=Math.random()*canvas.width;
+}
+}
+}
+draw();
+
+/* ============================= */
+/* NHẠC TỰ PHÁT (MỌI THIẾT BỊ) */
+/* ============================= */
+
+const audio = document.getElementById("sound");
+
+function playSound(){
+audio.currentTime = 0;
+audio.play().catch(()=>{});
+}
+
+/* chạy ngay */
+playSound();
+
+/* mobile cần tương tác nhẹ */
+document.addEventListener("touchstart", playSound, {once:true});
+document.addEventListener("click", playSound, {once:true});
+
+</script>
+
+</body>
+</html>
