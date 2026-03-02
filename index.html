@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Chúc mừng</title>
+
+<style>
+html, body {
+    margin:0;
+    padding:0;
+    background:#000;
+    height:100%;
+    overflow:hidden;
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+#container {
+    position:fixed;
+    top:0;
+    left:0;
+    width:100vw;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    text-align:center;
+    z-index:2;
+}
+
+h1 {
+    font-size:7vw;
+    margin-bottom:20px;
+}
+
+#giftImg {
+    max-width:85vw;
+    max-height:65vh;
+    object-fit:contain;
+}
+
+canvas {
+    position:fixed;
+    top:0;
+    left:0;
+    width:100vw;
+    height:100vh;
+    z-index:1;
+    pointer-events:none;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="confetti"></canvas>
+
+<div id="container">
+    <h1>🎉 CHÚC MỪNG BẠN 🎉</h1>
+    <img id="giftImg">
+</div>
+
+<audio id="winSound" src="win.mp3" preload="auto"></audio>
+
+<script>
+
+/* ============================
+   GIỚI HẠN MỖI MÁY 1 LẦN
+============================ */
+
+if(localStorage.getItem("daQuetQR")){
+    document.body.innerHTML = `
+    <div style="
+        color:white;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        height:100vh;
+        font-size:6vw;
+        text-align:center;
+        padding:20px;
+    ">
+    Bạn đã quét mã này rồi 💖
+    </div>`;
+    throw new Error("Already scanned");
+}
+
+localStorage.setItem("daQuetQR", "true");
+
+
+/* ============================
+   DANH SÁCH QUÀ + TỶ LỆ
+============================ */
+
+const gifts = [
+    { img:"qua1.png", weight:30 },
+    { img:"qua2.png", weight:30 },
+    { img:"qua3.png", weight:30 },
+    { img:"qua4.png", weight:30 },
+    { img:"qua5.png", weight:30 },
+    { img:"qua6.png", weight:10 },
+    { img:"voucher.png", weight:60 }
+];
+
+function randomGift(){
+    const total = gifts.reduce((s,g)=>s+g.weight,0);
+    let r = Math.random()*total;
+    for(const g of gifts){
+        if(r < g.weight) return g.img;
+        r -= g.weight;
+    }
+}
+
+
+/* ============================
+   HIỆN QUÀ
+============================ */
+
+document.getElementById("giftImg").src = randomGift();
+
+
+/* ============================
+   RUNG ĐIỆN THOẠI
+============================ */
+
+if(navigator.vibrate){
+    navigator.vibrate([200,100,200,100,400]);
+}
+
+
+/* ============================
+   PHÁT NHẠC (AUTO)
+============================ */
+
+const audio = document.getElementById("winSound");
+audio.volume = 1;
+
+audio.play().catch(()=>{
+    // nếu bị chặn autoplay, thử lại nhiều lần
+    const retry = setInterval(()=>{
+        audio.play().then(()=>clearInterval(retry)).catch(()=>{});
+    }, 500);
+});
+
+
+/* ============================
+   CONFETTI FULLSCREEN
+============================ */
+
+const canvas = document.getElementById("confetti");
+const ctx = canvas.getContext("2d");
+
+function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+const pieces = [];
+const number = 180;
+
+for(let i=0;i<number;i++){
+    pieces.push({
+        x: Math.random()*canvas.width,
+        y: Math.random()*canvas.height - canvas.height,
+        size: Math.random()*8+4,
+        speedY: Math.random()*3+2,
+        speedX: Math.random()*2-1,
+        rotation: Math.random()*360
+    });
+}
+
+function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(const p of pieces){
+        ctx.save();
+        ctx.translate(p.x,p.y);
+        ctx.rotate(p.rotation*Math.PI/180);
+        ctx.fillStyle = `hsl(${Math.random()*360},100%,60%)`;
+        ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size);
+        ctx.restore();
+
+        p.y += p.speedY;
+        p.x += p.speedX;
+        p.rotation += 3;
+
+        if(p.y > canvas.height){
+            p.y = -20;
+            p.x = Math.random()*canvas.width;
+        }
+    }
+    requestAnimationFrame(draw);
+}
+
+draw();
+
+</script>
+
+</body>
+</html>
