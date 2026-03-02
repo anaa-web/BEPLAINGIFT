@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Gift</title>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<style>
+body{
+margin:0;
+background:black;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+#gift{
+width:100vw;
+height:100vh;
+object-fit:contain;
+}
+</style>
+</head>
+
+<body>
+
+<img id="gift">
+<audio id="sound" src="win.mp3"></audio>
+
+<script>
+
+window.onload=start
+
+function start(){
+
+let result=localStorage.getItem("giftResult")
+
+if(!result){
+const r=Math.random()
+
+if(r<0.6) result="voucher.png"
+else if(r<0.7) result="qua6.png"
+else{
+const gifts=["qua1.png","qua2.png","qua3.png","qua4.png","qua5.png"]
+result=gifts[Math.floor(Math.random()*gifts.length)]
+}
+
+localStorage.setItem("giftResult",result)
+}
+
+document.getElementById("gift").src=result
+
+if(result==="voucher.png"){
+celebrate()
+}
+}
+
+function celebrate(){
+if(window.confetti){
+confetti({particleCount:200,spread:120})
+}
+
+const sound=document.getElementById("sound")
+sound.play().catch(()=>{})
+
+if(navigator.vibrate){
+navigator.vibrate([200,100,200])
+}
+}
+
+</script>
+
+</body>
+</html>
